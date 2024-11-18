@@ -1,33 +1,72 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
-
+import { useParams } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { addToWhishlist } from '../redux/slices/wishListSlice'
 
 const View = () => {
+  const dispatch = useDispatch()
+  const userWishlist = useSelector(state=>state.wishlistReducer)
+  const [product,setProducts]=useState({})
+  const {id}=useParams()
+  // console.log(id);
+  // console.log(product);
+  
+
+  useEffect(()=>{
+    if(sessionStorage.getItem("allProducts")){
+      const allProducts = JSON.parse(sessionStorage.getItem("allProducts"))
+      setProducts(allProducts.find(item=>item.id==id))
+    }
+  },[])
+
+  const handleWishlist = ()=>{
+    const existingProduct = userWishlist?.find(item=>item?.id==id)
+    if(existingProduct){
+      alert("Product already in your wishlist!!!")
+    }else{
+      alert("Product Added to your wishlist")
+      dispatch(addToWhishlist(product))
+    }
+  }
+  
   return (
     <>
     <Header/>
-    <div className='mx-5 flex'>
-      <div style={{marginTop:'150px', display:'flex',alignItems:'center',height:'50vh'}}>
-        <div className="grid grid-cols-2 items-center">
-          <img className='ms-40' width={'650px'} height={'650px'} src="https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/MQTQ3?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1687660671363" alt="" />
-        </div>
-        <div>
-          <h3 className='font-bold'>PID:3</h3>
-          <h1 className='text-5xl font-bold'>Title</h1>
-          <h4 className='font-bold text-red-600'>$600</h4>
-          <h4>Brand : brand</h4>
-          <h4>Category : category</h4>
-          <p>
-            <span className='font-bold'>Description</span>: Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda mollitia impedit corrupti fuga, vel laborum officia magnam eum minima ipsa quis, fugiat rerum iste magni? Eaque sapiente unde maiores incidunt.
-            Aperiam iusto id possimus. Quia, a veritatis! Aliquam quo rerum, perspiciatis iste similique nobis quis eius soluta dolorum excepturi, beatae id reiciendis ipsa debitis sed quibusdam neque quia doloribus et?
-          </p>
-          <div className='flex justify-between mt-5'>
-            <button className='bg-blue-600 rounded text-white p-2'>Add to Wishlist</button>
-            <button className='bg-green-600 rounded text-white p-2'>Add to Cart</button>
-  
-          </div>
-        </div>
+    <div className='flex flex-col mx-5'>
+      <div className="grid grid-cols-2 items-center h-screen">
+      <img width={'350px'} height={'250px'} src={product?.thumbnail} alt="" />
+      <div>
+      <h3 className='font-bold'>PTD : {product?.id} </h3>
+      <h1 className='text-5xl font-bold'>{product?.title}</h1>
+      <h4 className='font-bold text-red-600 text-2xl'>{product?.price}</h4>
+      <h4>Brand : {product?.brand}</h4>
+      <h4>Category : {product?.category}</h4>
+      <p>
+        <span className='font-bold'>Description</span>: {product?.description}
+      </p>
+      <div className="flex justify-between mt-5">
+        <button onClick={handleWishlist} className='bg-blue-600 rounded text-white p-2'>ADD TO WISHLIST</button>
+        <button className='bg-green-600 rounded text-white p-2'>ADD TO CART</button>
+
       </div>
+      <h3 className='font-bold mt-4'>Client Review</h3>
+      {
+        product?.reviews?.length>0?
+        product?.reviews?.map(item=>(
+         <div key={item.date} className="shadow border rounded p-3 mb-2">
+          <h5>
+            <span className='font-bold'>{item?.reviewerName}</span>: <span>{item?.comment}</span>
+          </h5>
+          <p>Rating:{item?.rating} <i className='fa-solid fa-star text-yellow-400'></i></p>
+         </div>
+        ))
+        :
+        <div className="font-bold text-red-600">No Review yet!!!</div>
+      }
+      </div>
+      </div>
+      
     </div>
     </>
   )
